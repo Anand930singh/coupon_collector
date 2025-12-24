@@ -1,191 +1,10 @@
-/* Base Variables */
-:root {
-  --color-primary: #4f46e5;
-  --color-primary-dark: #4338ca;
-  --color-primary-light: #eef2ff;
-  --color-accent-green: #10b981;
-  --color-accent-gold: #f59e0b;
-  --color-background: #f8fafc;
-  --color-surface: #ffffff;
-  --color-text: #1e293b;
-  --color-text-muted: #64748b;
-  --color-border: #e2e8f0;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-/* Reset & Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Home Page Specific Styles */
 .home {
   font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-.container {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.container-wide {
-  max-width: 1600px;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: var(--color-primary-dark);
-}
-
-.btn-secondary {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.btn-secondary:hover {
-  background-color: var(--color-primary-light);
-  border-color: var(--color-primary);
-}
-
-.btn-white {
-  background-color: white;
-  color: var(--color-primary);
-}
-
-.btn-white:hover {
-  background-color: var(--color-primary-light);
-}
-
-.btn-lg {
-  padding: 14px 24px;
-  font-size: 16px;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-/* Header */
-.header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.logo-icon {
-  width: 28px;
-  height: 28px;
-}
-
-/* Mobile Menu Button */
-.btn-mobile-menu {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: none;
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-/* Navigation */
-.nav {
-  display: none;
-  position: absolute;
-  top: 64px;
-  left: 0;
-  right: 0;
-  background: var(--color-surface);
-  flex-direction: column;
-  padding: 16px;
-  border-bottom: 1px solid var(--color-border);
-  gap: 8px;
-}
-
-.nav-open {
-  display: flex;
-}
-
-.nav a {
-  color: var(--color-text-muted);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
-}
-
-.nav a:hover {
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.header-actions .btn-signin,
-.header-actions .btn-getstarted {
-  display: none;
 }
 
 /* Hero Section */
@@ -381,6 +200,14 @@
   background: var(--color-background);
   border-radius: var(--radius-lg);
   text-align: center;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  background: var(--color-surface);
 }
 
 .step-number {
@@ -704,72 +531,6 @@
   margin-right: auto;
 }
 
-/* Footer */
-.footer {
-  background-color: var(--color-text);
-  color: white;
-  padding-top: 48px;
-}
-
-.footer-content {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footer-brand .logo {
-  color: white;
-  margin-bottom: 12px;
-}
-
-.footer-brand p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  max-width: 300px;
-}
-
-.footer-links {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 32px;
-}
-
-.footer-column {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.footer-column h4 {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
-}
-
-.footer-column a {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  transition: color 0.2s ease;
-  font-size: 14px;
-}
-
-.footer-column a:hover {
-  color: white;
-}
-
-.footer-bottom {
-  padding: 20px 0;
-  text-align: center;
-}
-
-.footer-bottom p {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-}
 
 /* ========================================
    RESPONSIVE BREAKPOINTS
@@ -805,18 +566,6 @@
 
 /* Large phones (480px - 639px) */
 @media (min-width: 480px) {
-  .container {
-    padding: 0 24px;
-  }
-
-  .header-content {
-    height: 68px;
-  }
-
-  .logo {
-    font-size: 22px;
-  }
-
   .hero-text h1 {
     font-size: 34px;
   }
@@ -889,57 +638,10 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-
-  .footer-links {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 /* Tablets (768px - 1023px) */
 @media (min-width: 768px) {
-  .btn-mobile-menu {
-    display: none;
-  }
-
-  .nav {
-    display: flex;
-    position: static;
-    flex-direction: row;
-    padding: 0;
-    border: none;
-    gap: 32px;
-    background: transparent;
-  }
-
-  .nav a {
-    padding: 8px 0;
-  }
-
-  .nav a:hover {
-    background: transparent;
-  }
-
-  .header-actions .btn-signin {
-    display: inline-flex;
-  }
-
-  .header-actions .btn-getstarted {
-    display: inline-flex;
-  }
-
-  .header-content {
-    height: 72px;
-  }
-
-  .logo {
-    font-size: 24px;
-  }
-
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-  }
-
   .hero {
     padding: 80px 0 100px;
   }
@@ -1039,20 +741,6 @@
 
   .final-cta h2 {
     font-size: 32px;
-  }
-
-  .footer-content {
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  .footer-brand {
-    flex: 0 0 280px;
-  }
-
-  .footer-links {
-    flex: 1;
-    max-width: 480px;
   }
 }
 

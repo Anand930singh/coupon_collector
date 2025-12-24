@@ -1,7 +1,9 @@
 import "./home.css"
-import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "../../contexts/AuthContext"
+import { Navbar } from "../../components/Navbar/Navbar"
+import { Footer } from "../../components/Footer/Footer"
 import {
-  Gift,
   Tag,
   ShoppingBag,
   Utensils,
@@ -17,43 +19,26 @@ import {
   ArrowRight,
   Plus,
   Coins,
+  Gift,
   Ticket,
-  Menu,
-  X,
 } from "lucide-react"
 
 export function Home() {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const navigate = useNavigate()
+
+  const handleListCoupon = (e) => {
+    e.preventDefault()
+    if (isAuthenticated) {
+      navigate("/upload")
+    } else {
+      navigate("/auth", { state: { from: { pathname: "/upload" } } })
+    }
+  }
 
   return (
     <div className="home">
-      {/* Header */}
-      <header className="header">
-        <div className="container header-content">
-          <a href="/" className="logo">
-            <Gift className="logo-icon" />
-            <span>CouponShare</span>
-          </a>
-          <nav className={`nav ${menuOpen ? "nav-open" : ""}`}>
-            <a href="#how-it-works" onClick={() => setMenuOpen(false)}>
-              How It Works
-            </a>
-            <a href="#categories" onClick={() => setMenuOpen(false)}>
-              Categories
-            </a>
-            <a href="#rewards" onClick={() => setMenuOpen(false)}>
-              Rewards
-            </a>
-          </nav>
-          <div className="header-actions">
-            <button className="btn btn-secondary btn-signin">Sign In</button>
-            <button className="btn btn-primary btn-getstarted">Get Started</button>
-            <button className="btn-mobile-menu" onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <main>
         {/* Hero Section */}
@@ -65,14 +50,14 @@ export function Home() {
                 Share coupons you don't need, earn reward points, and redeem verified coupons shared by real users.
               </p>
               <div className="hero-ctas">
-                <button className="btn btn-primary btn-lg">
+                <button onClick={handleListCoupon} className="btn btn-primary btn-lg">
                   <Plus size={20} />
                   List a Coupon
                 </button>
-                <button className="btn btn-secondary btn-lg">
+                <Link to="/browse" className="btn btn-secondary btn-lg">
                   <Tag size={20} />
                   Browse Coupons
-                </button>
+                </Link>
               </div>
               <div className="hero-stats">
                 <div className="stat">
@@ -82,10 +67,6 @@ export function Home() {
                 <div className="stat">
                   <span className="stat-number">120K+</span>
                   <span className="stat-label">Happy Users</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-number">95%</span>
-                  <span className="stat-label">Success Rate</span>
                 </div>
               </div>
             </div>
@@ -120,14 +101,18 @@ export function Home() {
               <p>Start earning rewards in three simple steps</p>
             </div>
             <div className="steps-grid">
-              <article className="step-card">
+              <button
+                onClick={handleListCoupon}
+                className="step-card"
+                style={{ textDecoration: 'none', color: 'inherit', border: 'none', background: 'inherit', cursor: 'pointer', width: '100%' }}
+              >
                 <div className="step-number">1</div>
                 <div className="step-icon">
                   <Plus size={32} />
                 </div>
                 <h3>Add a Coupon</h3>
                 <p>List coupons from Amazon, GPay, PhonePe, Swiggy, and more.</p>
-              </article>
+              </button>
               <article className="step-card">
                 <div className="step-number">2</div>
                 <div className="step-icon step-icon-gold">
@@ -289,7 +274,7 @@ export function Home() {
                 </div>
                 <div className="rewards-card-balance">2,450</div>
                 <div className="rewards-card-label">Reward Points</div>
-                <button className="btn btn-primary btn-block">Redeem Now</button>
+                <Link to="/browse" className="btn btn-primary btn-block">Redeem Now</Link>
               </div>
             </div>
           </div>
@@ -300,7 +285,7 @@ export function Home() {
           <div className="container final-cta-content">
             <h2>Stop Letting Coupons Expire</h2>
             <p>Join thousands of users who are already earning rewards by sharing their unused coupons.</p>
-            <button className="btn btn-white btn-lg">
+            <button onClick={handleListCoupon} className="btn btn-white btn-lg">
               Get Started Free
               <ArrowRight size={20} />
             </button>
@@ -308,40 +293,7 @@ export function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="footer">
-        <div className="container footer-content">
-          <div className="footer-brand">
-            <a href="/" className="logo">
-              <Gift className="logo-icon" />
-              <span>CouponShare</span>
-            </a>
-            <p>The trusted coupon marketplace for verified discount coupons and online coupon exchange.</p>
-          </div>
-          <div className="footer-links">
-            <div className="footer-column">
-              <h4>Platform</h4>
-              <a href="#">Browse Coupons</a>
-              <a href="#">List a Coupon</a>
-              <a href="#">Rewards</a>
-            </div>
-            <div className="footer-column">
-              <h4>Company</h4>
-              <a href="#">About Us</a>
-              <a href="#">Contact</a>
-              <a href="#">Blog</a>
-            </div>
-            <div className="footer-column">
-              <h4>Legal</h4>
-              <a href="#">Privacy Policy</a>
-              <a href="#">Terms of Service</a>
-            </div>
-          </div>
-        </div>
-        <div className="container footer-bottom">
-          <p>© 2025 CouponShare. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
