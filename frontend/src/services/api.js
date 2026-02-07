@@ -78,6 +78,16 @@ export const authAPI = {
   },
 }
 
+// Extract API (Gemini) - extract coupon fields from text
+export const extractAPI = {
+  extractFromText: async (prompt) => {
+    return apiRequest("/extract", {
+      method: "POST",
+      body: JSON.stringify({ prompt }),
+    })
+  },
+}
+
 // Coupon API (for future use when endpoints are ready)
 export const couponAPI = {
   listCoupon: async (couponData) => {
@@ -98,5 +108,6 @@ export const couponAPI = {
 export default {
   authAPI,
   couponAPI,
+  extractAPI,
 }
 

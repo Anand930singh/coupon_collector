@@ -1,14 +1,11 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { couponAPI } from "../../services/api"
+import { couponAPI, extractAPI } from "../../services/api"
 import "./couponform.css"
+import { createWorker } from "tesseract.js"
 
 export function CouponForm() {
   const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState("")
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [formData, setFormData] = useState({
     proofScreenshotUrl: "",
     code: "",
@@ -27,9 +24,37 @@ export function CouponForm() {
     usageType: "single-use",
     geoRestriction: "",
   })
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([])
+  const [uploadedImageFiles, setUploadedImageFiles] = useState([])
   const [imagePreview, setImagePreview] = useState(null)
+  const [extractedTexts, setExtractedTexts] = useState([])
+  const [isProcessingImages, setIsProcessingImages] = useState(false)
   const [imageError, setImageError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [isAutoFilling, setIsAutoFilling] = useState(false)
   const [toasts, setToasts] = useState([])
+
+  const parseImageToText = async (image) => {
+    let worker
+    try {
+      worker = await createWorker("eng")
+      const recognizePromise = worker.recognize(image)
+      const timeoutMs = 45000 // 45s per image so OCR doesn't hang forever
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("OCR timeout")), timeoutMs)
+      )
+      const ret = await Promise.race([recognizePromise, timeoutPromise])
+      console.log(ret)
+      return ret?.data?.text ?? ""
+    } catch (err) {
+      console.warn("OCR failed for image:", err)
+      return ""
+    } finally {
+      if (worker) await worker.terminate()
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -39,31 +64,57 @@ export function CouponForm() {
     }))
   }
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Validate file size (5MB)
+  const handleImageUpload = async (e) => {
+    const files = e.target.files
+    if (!files?.length) return
+
+    const fileList = Array.from(files)
+    for (const file of fileList) {
       if (file.size > 5 * 1024 * 1024) {
         setImageError("File size must be less than 5MB")
         return
       }
-      
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         setImageError("Please upload a valid image file")
         return
       }
+    }
 
-      setImageError("")
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-        setFormData((prev) => ({
-          ...prev,
-          proofScreenshotUrl: reader.result,
-        }))
+    setImageError("")
+    setImagePreviewUrls((prev) => {
+      prev.forEach((url) => URL.revokeObjectURL(url))
+      return []
+    })
+    const previewUrls = fileList.map((f) => URL.createObjectURL(f))
+    setImagePreviewUrls(previewUrls)
+    setUploadedImageFiles(fileList)
+
+    // Form: set first image for preview and proof immediately (so UI doesn't feel stuck)
+    const firstFile = fileList[0]
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result)
+      setFormData((prev) => ({
+        ...prev,
+        proofScreenshotUrl: reader.result,
+      }))
+    }
+    reader.readAsDataURL(firstFile)
+
+    // Run OCR in background; always clear processing state so spinner never gets stuck
+    setIsProcessingImages(true)
+    try {
+      const texts = []
+      for (const file of fileList) {
+        const text = await parseImageToText(file)
+        texts.push(text ?? "")
       }
-      reader.readAsDataURL(file)
+      setExtractedTexts(texts)
+    } catch (err) {
+      console.warn("Image processing error:", err)
+      setExtractedTexts(fileList.map(() => ""))
+    } finally {
+      setIsProcessingImages(false)
     }
   }
 
@@ -71,10 +122,56 @@ export function CouponForm() {
     const id = Date.now() + Math.random()
     setToasts((prev) => [...prev, { id, message }])
     
-    // Auto remove toast after 4 seconds
+    // Auto remove oast after 4 seconds
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id))
     }, 4000)
+  }
+
+  const handleAutoFill = async () => {
+    const combinedText = (extractedTexts || []).filter(Boolean).join("\n\n").trim()
+    if (!combinedText) {
+      showToast("Wait for image processing to finish, or upload an image first.")
+      return
+    }
+    setIsAutoFilling(true)
+    setImageError("")
+    try {
+      const { result } = await extractAPI.extractFromText(combinedText)
+      if (!result) {
+        showToast("Could not extract coupon details. Try a clearer image.")
+        return
+      }
+      setFormData((prev) => {
+        let next = { ...prev }
+        const r = result
+
+        if (r.title != null && r.title !== "") next.title = r.title
+        if (r.description != null && r.description !== "") next.description = r.description
+        if (r.code != null && r.code !== "") next.code = r.code
+        if (r.platform != null && r.platform !== "") next.platform = String(r.platform).toLowerCase()
+        if (r.category != null && r.category !== "") next.category = String(r.category).toLowerCase()
+        if (r.discountType != null && r.discountType !== "") next.discountType = String(r.discountType).toLowerCase()
+        if (r.discountValue != null) next.discountValue = r.discountValue === "" ? "" : String(r.discountValue)
+        if (r.minOrderValue != null) next.minOrderValue = r.minOrderValue === "" ? "" : String(r.minOrderValue)
+        if (r.maxDiscountValue != null) next.maxDiscountValue = r.maxDiscountValue === "" ? "" : String(r.maxDiscountValue)
+        if (r.validFrom != null && r.validFrom !== "") next.validFrom = r.validFrom
+        if (r.validTill != null && r.validTill !== "") next.validTill = r.validTill
+        if (typeof r.requiresUniqueUser === "boolean") next.requiresUniqueUser = r.requiresUniqueUser
+        if (r.usageType != null && r.usageType !== "") {
+          const u = String(r.usageType).toUpperCase().replace(/-/g, "_")
+          next.usageType = u === "SINGLE_USE" ? "single-use" : u === "MULTI_USE" || u === "UNLIMITED" ? "multi-use" : prev.usageType
+        }
+        if (r.geoRestriction != null && r.geoRestriction !== "") next.geoRestriction = r.geoRestriction
+        if (r.terms != null && r.terms !== "") next.terms = r.terms
+        return next
+      })
+      showToast("Form auto-filled from coupon image. Review and edit as needed.")
+    } catch (err) {
+      showToast(err.message || "Auto-fill failed. Try again or enter details manually.")
+    } finally {
+      setIsAutoFilling(false)
+    }
   }
 
   const removeToast = (id) => {
@@ -188,7 +285,13 @@ export function CouponForm() {
           usageType: "single-use",
           geoRestriction: "",
         })
+        setImagePreviewUrls((prev) => {
+          prev.forEach((url) => URL.revokeObjectURL(url))
+          return []
+        })
         setImagePreview(null)
+        setUploadedImageFiles([])
+        setExtractedTexts([])
         setSubmitSuccess(false)
         // Optionally redirect to browse page
         // navigate("/browse")
@@ -310,18 +413,28 @@ export function CouponForm() {
 
               <div className={`image-upload-wrapper ${imageError ? "has-error" : ""}`}>
                 <label htmlFor="proofScreenshot" className="image-upload-label">
-                  {imagePreview ? (
-                    <div className="image-preview">
-                      <img src={imagePreview || "/placeholder.svg"} alt="Coupon image" />
+                  {imagePreviewUrls.length > 0 ? (
+                    <div className="image-preview-grid">
+                      <div className="image-preview-grid-inner">
+                        {imagePreviewUrls.map((url, index) => (
+                          <div key={index} className="image-preview-item">
+                            <img src={url} alt={`Coupon ${index + 1}`} />
+                            <span className="image-preview-index">{index + 1}</span>
+                          </div>
+                        ))}
+                      </div>
                       <button
                         type="button"
                         className="remove-image-btn"
                         onClick={(e) => {
                           e.preventDefault()
+                          imagePreviewUrls.forEach((url) => URL.revokeObjectURL(url))
+                          setImagePreviewUrls([])
                           setImagePreview(null)
+                          setUploadedImageFiles([])
+                          setExtractedTexts([])
                           setFormData((prev) => ({ ...prev, proofScreenshotUrl: "" }))
                           setImageError("")
-                          // Reset file input
                           const fileInput = document.getElementById("proofScreenshot")
                           if (fileInput) fileInput.value = ""
                         }}
@@ -337,12 +450,14 @@ export function CouponForm() {
                           <path d="M18 6L6 18M6 6l12 12" />
                         </svg>
                       </button>
-                      <div className="processing-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                        </svg>
-                        Processing image...
-                      </div>
+                      {isProcessingImages && (
+                        <div className="processing-badge is-processing">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                          </svg>
+                          Processing images...
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="upload-placeholder">
@@ -384,6 +499,7 @@ export function CouponForm() {
                   id="proofScreenshot"
                   name="proofScreenshot"
                   accept="image/*"
+                  multiple
                   onChange={handleImageUpload}
                   className={`image-input ${imageError ? "error" : ""}`}
                   required
@@ -400,6 +516,40 @@ export function CouponForm() {
                 )}
               </div>
             </section>
+
+            {/* Auto Fill Form - between upload and form */}
+            {imagePreviewUrls.length > 0 && (
+              <div className="autofill-form-actions">
+                <button
+                  type="button"
+                  className="btn btn-autofill"
+                  onClick={handleAutoFill}
+                  disabled={isProcessingImages || isAutoFilling}
+                >
+                  {isAutoFilling ? (
+                    <>
+                      <svg className="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                      </svg>
+                      Filling...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                      </svg>
+                      Auto Fill form
+                    </>
+                  )}
+                </button>
+                {isProcessingImages && (
+                  <span className="autofill-hint">Wait for image processing to finish</span>
+                )}
+                {!isProcessingImages && extractedTexts.length > 0 && !isAutoFilling && (
+                  <span className="autofill-hint">Click to fill form from extracted text</span>
+                )}
+              </div>
+            )}
 
             {/* Basic Info Section */}
             <section className="form-section">

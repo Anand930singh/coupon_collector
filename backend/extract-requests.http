@@ -1,0 +1,12 @@
+### Health / server must be running on http://localhost:8080
+### Start the app in IntelliJ: Run BackendApplication, or: ./gradlew bootRun
+
+POST http://localhost:8080/api/extract
+Content-Type: application/json
+
+{
+  "prompt": "Extract coupon details in STRICT JSON format. Ignore noise, symbols, duplicate lines and ads. Return only valid JSON. Fields: code, title, description, platform, category, discountType (percentage/flat), discountValue, minOrderValue, maxDiscountValue, terms, validFrom, validTill, requiresUniqueUser, usageType (single-use/multi-use), geoRestriction. If not found return null. Text: 30 OTTs @ ₹149. Expires on March 1, 2026. Only valid for new users. Get 30 OTTs for ₹149/month for 1st month and ₹199/month from second month onward. Includes JioHotstar, SonyLIV, Lionsgate Play, Zee5, Fancode, Sun NXT, aha Telugu and 20+ more OTTs. Cannot be clubbed with other offers."
+}
+
+
+###
