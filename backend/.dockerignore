@@ -1,0 +1,55 @@
+# Docker ignore file for Spring Boot project
+# Exclude unnecessary files from Docker build context to reduce image size and build time
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Build outputs (will be rebuilt in Docker)
+build/
+.gradle/
+dist/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.iml
+*.iws
+*.ipr
+*.class
+
+# OS files
+.DS_Store
+Thumbs.db
+.thumbs.db
+
+# Documentation
+README.md
+TESTING_GUIDE.md
+REWARD_POINTS_FLOW.md
+IMPLEMENTATION_SUMMARY.md
+VISUAL_GUIDE.md
+QUICK_REFERENCE.md
+IMPLEMENTATION_COMPLETE.md
+FINAL_CHECKLIST.md
+
+# Environment files
+.env
+.env.local
+*.properties.local
+
+# Logs
+*.log
+logs/
+
+# Node modules (if any frontend is in same repo)
+node_modules/
+
+# Other
+*.jar
+*.war
+.DS_Store
