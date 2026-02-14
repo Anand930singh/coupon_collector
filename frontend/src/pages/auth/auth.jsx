@@ -82,7 +82,7 @@ export default function AuthForm() {
       // Check for specific error types
       if (errorMessage.includes("connect") || errorMessage.includes("CORS")) {
         setErrors({ 
-          general: "Cannot connect to server. Please ensure the backend is running on http://localhost:8080"
+          general: "Cannot connect to server."
         })
       } else if (errorMessage.includes("403") || errorMessage.includes("Forbidden") || errorMessage.includes("Access Denied")) {
         setErrors({ 
@@ -161,7 +161,7 @@ export default function AuthForm() {
       // Check for specific error types
       if (errorMessage.includes("connect") || errorMessage.includes("CORS")) {
         setErrors({ 
-          general: "Cannot connect to server. Please ensure the backend is running on http://localhost:8080"
+          general: "Cannot connect to server. Please ensure the backend is running on https://coupon-collectoruyyf656789.onrender.com"
         })
       } else if (errorMessage.includes("email") || errorMessage.includes("exists")) {
         setErrors({ 
