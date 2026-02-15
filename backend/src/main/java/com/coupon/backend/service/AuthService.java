@@ -30,9 +30,8 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     public UserDetailsResponseDto register(UserDetailsRequestDto requestDto) {
-        // Check if user already exists
         if (userDetailRepository.existsByEmail(requestDto.email())) {
-            throw new RuntimeException("User with email " + requestDto.email() + " already exists");
+            throw new RuntimeException("User with this email already exists");
         }
 
         UserDetail user = userDetailMapper.toEntity(requestDto);
@@ -44,7 +43,7 @@ public class AuthService {
     public UserDetailsResponseDto signin(SingInRequestDto requestDto) {
         Optional<UserDetail> userOptional = userDetailRepository.findByEmail(requestDto.email());
         if (userOptional.isEmpty()) {
-            throw new RuntimeException("User with email " + requestDto.email() + " does not exist");
+            throw new RuntimeException("User with this email does not exist");
         }
 
         UserDetail user = userOptional.get();

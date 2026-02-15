@@ -24,8 +24,7 @@ public class UserDetailMapper {
         userDetail.setEmail(userDetailsRequestDto.email());
         userDetail.setPassword(passwordEncoder.encode(userDetailsRequestDto.password()));
         userDetail.setPoints(5);
-        
-        // Generate a unique referral code
+
         String referralCode;
         do {
             referralCode = ReferralCodeGenerator.generateReferralCode();

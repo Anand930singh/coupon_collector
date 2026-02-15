@@ -33,6 +33,7 @@ public class SecurityConfig {
                     auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     auth.requestMatchers("/api/auth/**", "/auth/**").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/coupons/browse", "/coupons/browse").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/health", "/health").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session -> session
@@ -48,4 +49,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

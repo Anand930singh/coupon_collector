@@ -21,18 +21,12 @@ public class CouponBrowseService {
     @Autowired
     private CouponMapper couponMapper;
 
-    /**
-     * Returns all active coupons, newest first.
-     */
     public List<CouponResponseDto> browseActive() {
         return couponRepository.findByIsActiveTrueOrderByCreatedAtDesc().stream()
                 .map(couponMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Returns all coupons (for admin or when no filter). Newest first.
-     */
     public List<CouponResponseDto> browseAll() {
         return couponRepository.findAll().stream()
                 .sorted(Comparator.comparing(Coupon::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
