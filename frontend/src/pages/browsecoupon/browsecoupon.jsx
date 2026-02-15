@@ -145,9 +145,8 @@ export function BrowseCoupons() {
             return toCard(c)
           })
           setCoupons(cardCoupons)
-          console.log("Fetched coupons:", cardCoupons)
+
           setFullCoupons(fullCouponsMap)
-          console.log("Full coupons map:", fullCouponsMap)
         } else if (!cancelled && data) setCoupons([])
       })
       .catch((err) => {

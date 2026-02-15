@@ -46,10 +46,8 @@ export function CouponForm() {
         setTimeout(() => reject(new Error("OCR timeout")), timeoutMs)
       )
       const ret = await Promise.race([recognizePromise, timeoutPromise])
-      console.log(ret)
       return ret?.data?.text ?? ""
     } catch (err) {
-      console.warn("OCR failed for image:", err)
       return ""
     } finally {
       if (worker) await worker.terminate()
@@ -111,7 +109,6 @@ export function CouponForm() {
       }
       setExtractedTexts(texts)
     } catch (err) {
-      console.warn("Image processing error:", err)
       setExtractedTexts(fileList.map(() => ""))
     } finally {
       setIsProcessingImages(false)
